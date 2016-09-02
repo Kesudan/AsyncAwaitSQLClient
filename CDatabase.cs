@@ -14,13 +14,13 @@ namespace ASyncAwaitTest
         public class CDatabaseResult
         {
             public bool Success;
-            public String Result;
-            public Object Data;
+            public string Result;
+            public object Data;
         }
-        public Task<CDatabaseResult> GetTextDataToCustomClassAsync(string sConnectionString, string sSQL)
+        public Task<CDatabaseResult> GetTextDataToCustomClassAsync(string sConnectionString, string sSQL, params SqlParameter[] parameters)
         {
             //Return task based on datatype
-            return Task<CDatabaseResult>.Factory.StartNew(() =>
+            return Task.Run(() =>
             {
                 try
                 {
@@ -29,7 +29,6 @@ namespace ASyncAwaitTest
                     using (SqlConnection newConnection = new SqlConnection(sConnectionString))
                     {
                         newConnection.Open();
-                        
                         SqlCommand command = new SqlCommand(sSQL, newConnection);
                         SqlDataReader reader = command.ExecuteReader();
                         while (reader.Read())
@@ -41,9 +40,6 @@ namespace ASyncAwaitTest
                             }
                             if (sData.Length == 0) { sData += sLine; } else { sData += "\r\n" + sLine; }
                         }
-
-                      
-
                         newConnection.Close();
                     }
 
@@ -57,6 +53,7 @@ namespace ASyncAwaitTest
                 }
                 catch (Exception ex)
                 {
+                    //Catch exception and return as error in class object
                     CDatabaseResult result = new CDatabaseResult()
                     {
                         Result = "GetData Error: " + ex.Message,
@@ -68,70 +65,50 @@ namespace ASyncAwaitTest
         }
 
         //EXECUTE ASYNC
-        public Task<int> ExecuteAsync(string sConnectionString, string sSQL)
+        public async Task<int> ExecuteAsync(string sConnectionString, string sSQL, params SqlParameter[] parameters)
         {
-            //Return task based on datatype
-            return Task<int>.Factory.StartNew(() =>
+            try
             {
-                try
+                using (var newConnection = new SqlConnection(sConnectionString))
+                using (var newCommand = new SqlCommand(sSQL, newConnection))
                 {
-                    int iNumberOfRecordsProcessed = 0;
+                    newCommand.CommandType = CommandType.Text;
+                    if (parameters != null) newCommand.Parameters.AddRange(parameters);
 
-                    using (SqlConnection newConnection = new SqlConnection(sConnectionString))
-                    {
-                        newConnection.Open();
-
-                        using (SqlCommand newCommand = new SqlCommand())
-                        {
-                            newCommand.Connection = newConnection;
-                            newCommand.CommandType = CommandType.Text;
-                            newCommand.CommandText = sSQL;
-                            iNumberOfRecordsProcessed = newCommand.ExecuteNonQuery();
-                        }
-                        newConnection.Close();
-                    }
-                    return iNumberOfRecordsProcessed;
+                    await newConnection.OpenAsync().ConfigureAwait(false);
+                    return await newCommand.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
-                catch (SqlException ex)
-                {
-                    throw ex; //Return to caller to let them handle
-                }
-            });
+            }
+            catch (SqlException)
+            {
+                throw;
+            }
         }
 
         // RETURN DATASET
-        public Task<DataSet> GetDataSetAsync(string sConnectionString, string sSQL)
+        public Task<DataSet> GetDataSetAsync(string sConnectionString, string sSQL, params SqlParameter[] parameters)
         {
-            DataSet myDataSet;
-            //Return task based on datatype
-            return Task<DataSet>.Factory.StartNew(() =>
+            return Task.Run(() =>
             {
                 try
                 {
-                    using (SqlConnection newConnection = new SqlConnection(sConnectionString))
+                    using (var newConnection = new SqlConnection(sConnectionString))
+                    using (var mySQLAdapter = new SqlDataAdapter(sSQL, newConnection))
                     {
-                        newConnection.Open();
+                        mySQLAdapter.SelectCommand.CommandType = CommandType.Text;
+                        if (parameters != null) mySQLAdapter.SelectCommand.Parameters.AddRange(parameters);
 
-                        // Get the dataset
-                        using (SqlDataAdapter mySQLAdapter = new SqlDataAdapter(sSQL, newConnection))
-                        {
-
-                            var sqlAdapter = mySQLAdapter;
-                            myDataSet = new DataSet();
-                            sqlAdapter.Fill(myDataSet);
-
-                        }
-
-                        newConnection.Close();
+                        DataSet myDataSet = new DataSet();
+                        mySQLAdapter.Fill(myDataSet);
+                        return myDataSet;
                     }
-
-                    return myDataSet;
                 }
-                catch (SqlException ex)
+                catch (SqlException)
                 {
-                    throw ex; //Return to caller to let them handle
+                    throw; //Return to caller to let them handle
                 }
             });
         }
     }
 }
+

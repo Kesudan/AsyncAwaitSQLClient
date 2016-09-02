@@ -1,0 +1,10 @@
+C:\@James\Archive\Other\SQLAsyncAwait\bin\Debug\SQLAsyncAwait.exe.config
+C:\@James\Archive\Other\SQLAsyncAwait\bin\Debug\SQLAsyncAwait.exe
+C:\@James\Archive\Other\SQLAsyncAwait\bin\Debug\SQLAsyncAwait.pdb
+C:\@James\Archive\Other\SQLAsyncAwait\obj\Debug\AsyncAwait_UsingSQLClient_Example.csprojResolveAssemblyReference.cache
+C:\@James\Archive\Other\SQLAsyncAwait\obj\Debug\ASyncAwaitTest.frmTestForm.resources
+C:\@James\Archive\Other\SQLAsyncAwait\obj\Debug\SQLAsyncAwait.Properties.Resources.resources
+C:\@James\Archive\Other\SQLAsyncAwait\obj\Debug\AsyncAwait_UsingSQLClient_Example.csproj.GenerateResource.Cache
+C:\@James\Archive\Other\SQLAsyncAwait\obj\Debug\SQLAsyncAwait.exe.licenses
+C:\@James\Archive\Other\SQLAsyncAwait\obj\Debug\SQLAsyncAwait.exe
+C:\@James\Archive\Other\SQLAsyncAwait\obj\Debug\SQLAsyncAwait.pdb

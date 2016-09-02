@@ -74,15 +74,15 @@ namespace ASyncAwaitTest
                     txtConnectionString.Text = csb.ToString();
                 }
             }
-            catch (System.ArgumentException argex)
+            catch (Exception argex)
             {
                 lstResults.Items.Add(argex.Message);
             }
         }
 
-        private void btnExecute_Click(object sender, EventArgs e)
+        private async void btnExecute_Click(object sender, EventArgs e)
         {
-            Execute();
+            await Execute();
         }
 
         private void timer_Tick(object sender, EventArgs e)
@@ -96,7 +96,7 @@ namespace ASyncAwaitTest
         #endregion
         
         //Main procedure which demonstrates the async/await operations
-        private void Execute()
+        private async Task Execute()
         {
             //Start
             m_QueryNumber += 1; var iQueryNumber = m_QueryNumber; 
@@ -105,17 +105,17 @@ namespace ASyncAwaitTest
                            
             //Results to table:
             if (rdResultsTable.Checked) {
-                ResultsToGrid(iQueryNumber);
+                await ResultsToGrid(iQueryNumber);
             }
             //Results to text:  
             else if (rdResultsText.Checked)
             {
-                ResultsToText(iQueryNumber);
+                await ResultsToText(iQueryNumber);
             }
             //Execute only:
             else if (rdExecuteOnly.Checked)
             {
-                ExecuteOnly(iQueryNumber);
+                await ExecuteOnly(iQueryNumber);
             }
 
             //Finished
@@ -124,7 +124,7 @@ namespace ASyncAwaitTest
         }
 
         //Results to grid
-        private async void ResultsToGrid(int iQuery)
+        private async Task ResultsToGrid(int iQuery)
         {
             CDatabase database = new CDatabase();
             try
@@ -143,7 +143,7 @@ namespace ASyncAwaitTest
 
         
         //Results to text
-        private async void ResultsToText(int iQuery)
+        private async Task ResultsToText(int iQuery)
         {
             CDatabase database = new CDatabase();
 
@@ -154,7 +154,7 @@ namespace ASyncAwaitTest
         }
 
         //Execute only
-        private async void ExecuteOnly(int iQuery)
+        private async Task ExecuteOnly(int iQuery)
         {
             CDatabase database = new CDatabase();
             try
@@ -172,7 +172,7 @@ namespace ASyncAwaitTest
         }
 
         //Chaining tasks
-        private async void ChainExecuteOnly(int iQuery, List<string> lstQueries)
+        private async Task ChainExecuteOnly(int iQuery, List<string> lstQueries)
         {
             //Build tasks based on the list of queries passed in and execute all async.
 
