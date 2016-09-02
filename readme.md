@@ -74,7 +74,6 @@ public Task<int> ExecuteAsync(string sConnectionString, string sSQL, params SqlP
             return newCommand.ExecuteNonQuery();
         }
     });
-}}
 }
 ```
 Further to this, there are existing async task functions on the SqlCommand object which can be used to simplify the function further. 
