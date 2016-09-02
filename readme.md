@@ -58,10 +58,29 @@ We can now call this function asynchronously to return a dataset of data based o
 
 **Example 2**: Function to execute a command, passing back the rows affected.
 
-In this example we have changed the data type to integer, as we simply want to pass back the rows affected for the result of this function.
-
+In this example, we have changed the data type to integer, as we simply want to pass back the rows affected for the result of this function.
 ```C#
-public async Task<int> ExecuteAsync(string sConnectionString, string sSQL, params SqlParameter[] parameters)
+public Task<int> ExecuteAsync(string sConnectionString, string sSQL, params SqlParameter[] parameters)
+{
+    return Task.Run(() =>
+    {
+        using (var newConnection = new SqlConnection(sConnectionString))
+        using (var newCommand = new SqlCommand(sSQL, newConnection))
+        {
+            newCommand.CommandType = CommandType.Text;
+            if (parameters != null) newCommand.Parameters.AddRange(parameters);
+
+            newConnection.Open();
+            return newCommand.ExecuteNonQuery();
+        }
+    });
+}}
+}
+```
+Further to this, there are existing async task functions on the SqlCommand object which can be used to simplify the function further. 
+```C#
+public async Task<int> ExecuteAsync(string sConnectionString, 
+string sSQL, params SqlParameter[] parameters)
 {
     using (var newConnection = new SqlConnection(sConnectionString))
     using (var newCommand = new SqlCommand(sSQL, newConnection))
@@ -82,7 +101,7 @@ Now that we have an async function to get data from SQL we can now call this asy
 To call the function to get data we start by adding "async" into the method declaration.
 
 ```C#
-private async void MyMethod()
+private async <type> MyMethod()
 ```
 Now that our method is an "async" method we can use the "await" option on the tasks returned from our SQL functions.
 
@@ -93,7 +112,7 @@ To execute task functions you need to add "await" before the function call.
 This will execute the function, and return the "Result" to the variable should one be specified.
 
 ```C#
-private async void GetSomeData(string sSQL)
+private async Task GetSomeData(string sSQL)
 {
     //Use Async method to get data
     DataSet results = await GetDataSetAsync(sConnectionString, sSQL, sqlParams);
@@ -105,7 +124,7 @@ private async void GetSomeData(string sSQL)
 Variables do not need to be specified. You can call the function using "await" which will run the task without retrieving a result.
 
 ```C#
-private async void ExecuteSomeData(string sSQL)
+private async Task ExecuteSomeData(string sSQL)
 {
     //Use Async method to get data
     await ExecuteAsync(sConnectionString, sSQL, sqlParams);
@@ -161,7 +180,7 @@ You can call a standard method on the "ContinueWith" method.
 In this example we use "ContinueWith" on the task object to pass the data through to a separate method.
 
 ```C#
-private async void RunSQLQuery(string sSQL)
+private async Task RunSQLQuery(string sSQL)
 {
     //Use await method to get data
     await GetDataSetAsync(sConnectionString, sSQL, sqlParams).ContinueWith(t => PopulateResults(t.Result));
