@@ -141,6 +141,7 @@ namespace ASyncAwaitTest
             }
         }
 
+        
         //Results to text
         private async void ResultsToText(int iQuery)
         {
@@ -163,12 +164,42 @@ namespace ASyncAwaitTest
                 //Log the rows affected.
                 if (iResults < 0) { AddLogItem("No Rows Updated"); } else { AddLogItem(String.Format("{0} Row(s) Updated", iResults)); }
             }
-            catch (SqlException sqlError)
+            catch (Exception ex)
             {
                 //In this case our task function is set to pass the error through to the caller, log error to list.
-                AddLogItem("Execute Only Error: " + sqlError.Message);
+                AddLogItem("Execute Only Error: " + ex.Message);
             }
         }
+
+        //Chaining tasks
+        private async void ChainExecuteOnly(int iQuery, List<string> lstQueries)
+        {
+            //Build tasks based on the list of queries passed in and execute all async.
+
+            CDatabase database = new CDatabase();
+
+            //Build task list
+            List<Task<int>> lstTasks = new List<Task<int>>();
+            lstQueries.ForEach(delegate (string sQuery)
+            {
+                Task<int> ExecuteTask = database.ExecuteAsync(txtConnectionString.Text, sQuery);
+                lstTasks.Add(ExecuteTask); 
+            });
+            //Convert to array and run
+            Task<int>[] arrTasks = lstTasks.ToArray();
+            await Task.WhenAll(arrTasks);
+
+            //Get results
+            int iRowsAffected = 0;
+            lstTasks.ForEach(delegate (Task<int> tTask)
+            {
+                iRowsAffected += tTask.Result; 
+            });
+
+            //Log results
+            AddLogItem(String.Format("{0} Row(s) Updated", iRowsAffected));
+        }
+
 
 
         #region Result Population Code

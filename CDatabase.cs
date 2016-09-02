@@ -83,17 +83,13 @@ namespace ASyncAwaitTest
 
                         using (SqlCommand newCommand = new SqlCommand())
                         {
-                            var _with1 = newCommand;
-                            _with1.Connection = newConnection;
-                            _with1.CommandType = CommandType.Text;
-                            _with1.CommandText = sSQL;
-                            iNumberOfRecordsProcessed = _with1.ExecuteNonQuery();
+                            newCommand.Connection = newConnection;
+                            newCommand.CommandType = CommandType.Text;
+                            newCommand.CommandText = sSQL;
+                            iNumberOfRecordsProcessed = newCommand.ExecuteNonQuery();
                         }
-
-
                         newConnection.Close();
                     }
-
                     return iNumberOfRecordsProcessed;
                 }
                 catch (SqlException ex)
